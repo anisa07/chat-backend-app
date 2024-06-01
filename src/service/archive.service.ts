@@ -11,8 +11,6 @@ import { Conversation } from 'src/schema/conversation.schema';
 import { ConversationDTO } from 'src/dto/conversation.dto';
 import { ArchiveMessageDTO } from 'src/dto/archive.message.dto';
 import { ArchiveMessage } from 'src/schema/archive.message.schema';
-import { History } from 'src/schema/history.schema';
-import { HistoryDTO } from 'src/dto/history.dto';
 import { UsersService } from './users.service';
 
 @Injectable()
@@ -23,8 +21,7 @@ export class ArchiveService {
     private conversationModel: Model<Conversation>,
     @InjectModel(ArchiveMessage.name)
     private archiveMessageModel: Model<ArchiveMessage>,
-    @InjectModel(History.name)
-    private historyModel: Model<History>,
+
     private socketConnectionService: SocketConnectionService,
     private readonly usersService: UsersService,
   ) {}
@@ -72,8 +69,12 @@ export class ArchiveService {
     return this.conversationModel.findOne({ conversationId });
   }
 
-  async getConversationHistory(conversationId: string) {
-    return this.historyModel.findOne({ conversationId });
+  // async getConversationHistory(conversationId: string) {
+  //   return this.historyModel.findOne({ conversationId });
+  // }
+
+  async getConversationArchive(conversationId: string) {
+    return this.archiveMessageModel.find({ conversationId });
   }
 
   async getConversationMessages(messageIds: string[]) {
@@ -106,21 +107,9 @@ export class ArchiveService {
     return this.archiveMessageModel.create(archiveMessage);
   }
 
-  async createHistoryMessage(historyMessage: HistoryDTO) {
-    return this.historyModel.create(historyMessage);
-  }
-
-  async getHistory(conversationId: string) {
-    return this.historyModel.findOne({ conversationId });
-  }
-
-  async updateHistory(conversationId: string, ids: string[]) {
-    return this.historyModel.findOneAndUpdate(
-      { conversationId },
-      { messageIds: ids },
-      { new: true },
-    );
-  }
+  // async getHistory(conversationId: string) {
+  //   return this.historyModel.findOne({ conversationId });
+  // }
 
   async getMessages(query: any) {
     const features = new APIFeatures(this.archiveModel.find(), query)

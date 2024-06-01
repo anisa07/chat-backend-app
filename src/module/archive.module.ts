@@ -9,7 +9,6 @@ import {
   Conversation,
   ConversationSchema,
 } from 'src/schema/conversation.schema';
-import { History, HistorySchema } from 'src/schema/history.schema';
 import {
   ArchiveMessage,
   ArchiveMessageSchema,
@@ -22,7 +21,6 @@ import { UsersModule } from './users.module';
     MongooseModule.forFeature([
       { name: Conversation.name, schema: ConversationSchema },
     ]),
-    MongooseModule.forFeature([{ name: History.name, schema: HistorySchema }]),
     MongooseModule.forFeature([
       { name: ArchiveMessage.name, schema: ArchiveMessageSchema },
     ]),

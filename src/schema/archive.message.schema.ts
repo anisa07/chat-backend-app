@@ -26,6 +26,13 @@ export class ArchiveMessage {
   })
   authorId: string;
 
+  @Prop({
+    type: String,
+    trim: true,
+    required: [true, 'Conversation is required'],
+  })
+  conversationId: string;
+
   @Prop({ default: now() })
   createdAt: Date;
 

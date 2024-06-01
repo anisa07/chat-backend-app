@@ -20,6 +20,7 @@ export class ArchiveController {
         data.conversationId,
       );
 
+      // check participant better in a case new user joins and old one leaves
       if (conversation.participantIds.length !== data.toIds.length + 1) {
         conversation = await this.archiveService.updateConversation(
           data.conversationId,
@@ -37,25 +38,11 @@ export class ArchiveController {
       authorId: data.fromId,
       message: data.message,
       messageId: createId(),
+      conversationId: conversation.conversationId,
     };
 
     const message =
       await this.archiveService.createArchiveMessage(archiveMessage);
-
-    let history;
-
-    if (data.conversationId) {
-      history = await this.archiveService.getHistory(data.conversationId);
-      this.archiveService.updateHistory(data.conversationId, [
-        ...history.messageIds,
-        archiveMessage.messageId,
-      ]);
-    } else {
-      history = await this.archiveService.createHistoryMessage({
-        conversationId: conversation.conversationId,
-        messageIds: [archiveMessage.messageId],
-      });
-    }
 
     this.archiveService.sendMessage({
       ...data,
@@ -71,14 +58,10 @@ export class ArchiveController {
         conversationId: conversation.conversationId,
       },
     });
-
-    return response.status(201).json({
-      message: 'success',
-    });
   }
 
   @Get(':userId')
-  async getUserConversations(
+  async getAllUserConversations(
     @Res() response: any,
     @Param('userId') userId: string,
   ) {
@@ -132,37 +115,24 @@ export class ArchiveController {
   }
 
   @Get('coversation/:coversationId')
-  async getConversationHistory(
+  async getUserConversation(
     @Res() response: any,
     @Param('coversationId') coversationId: string,
   ) {
-    const conversationHistory =
-      await this.archiveService.getConversationHistory(coversationId);
+    const conversationMessages =
+      await this.archiveService.getConversationArchive(coversationId);
 
-    if (!conversationHistory) {
+    if (!conversationMessages) {
       return response.status(201).json({
         message: 'success',
         data: [],
       });
     }
 
-    console.log('conversationHistory', conversationHistory);
-
-    const messages = await this.archiveService.getConversationMessages(
-      conversationHistory.messageIds,
-    );
-
-    console.log('messages', messages);
-
-    if (!messages) {
-      return response.status(201).json({
-        message: 'success',
-        data: [],
-      });
-    }
+    console.log('conversationMessages', conversationMessages);
 
     const authorIds = [];
-    for (const message of messages) {
+    for (const message of conversationMessages) {
       authorIds.push(message.authorId);
     }
 
@@ -175,7 +145,7 @@ export class ArchiveController {
 
     const updatedMessages = [];
 
-    for (const message of messages) {
+    for (const message of conversationMessages) {
       updatedMessages.push({
         message: message.message,
         messageId: message.messageId,
