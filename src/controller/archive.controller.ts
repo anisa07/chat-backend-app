@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Param, Post, Req, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Put,
+  Req,
+  Res,
+} from '@nestjs/common';
 import { MessageDTO } from 'src/dto/message.dto';
 import { ArchiveService } from 'src/service/archive.service';
 import { createId } from 'src/helpers/helpers';
@@ -12,8 +21,6 @@ export class ArchiveController {
   async saveMessage(@Body() data: MessageDTO, @Res() response: any) {
     const participantIds = Array.from(new Set([data.fromId, ...data.toIds]));
     let conversation;
-
-    console.log(data);
 
     if (data.conversationId) {
       conversation = await this.archiveService.getConversation(
@@ -39,6 +46,7 @@ export class ArchiveController {
       message: data.message,
       messageId: createId(),
       conversationId: conversation.conversationId,
+      unreadBy: data.toIds,
     };
 
     const message =
@@ -49,6 +57,7 @@ export class ArchiveController {
       messageId: message.messageId,
       createdAt: message.createdAt,
       conversationId: conversation.conversationId,
+      // mark that message is read by the participants on the client side
     });
 
     return response.status(201).json({
@@ -90,6 +99,13 @@ export class ArchiveController {
       });
     }
 
+    const unreadConversations =
+      await this.archiveService.checkUnreadMessagesConversationCount(
+        userId,
+        conversations.map((conversation) => conversation.conversationId),
+      );
+    console.log('unreadConversations', unreadConversations);
+
     const participantsMap = new Map();
     for (const user of participantUsers) {
       participantsMap.set(user.userId, user);
@@ -105,6 +121,10 @@ export class ArchiveController {
         participants: conversationParticipant,
         createdAt: conversation.createdAt,
         updatedAt: conversation.updatedAt,
+        newMessage: !!unreadConversations.find(
+          (unreadConversation) =>
+            unreadConversation.conversationId === conversation.conversationId,
+        ),
       });
     }
 
@@ -114,13 +134,13 @@ export class ArchiveController {
     });
   }
 
-  @Get('coversation/:coversationId')
+  @Get('coversation/:conversationId')
   async getUserConversation(
     @Res() response: any,
-    @Param('coversationId') coversationId: string,
+    @Param('conversationId') conversationId: string,
   ) {
     const conversationMessages =
-      await this.archiveService.getConversationArchive(coversationId);
+      await this.archiveService.getConversationArchive(conversationId);
 
     if (!conversationMessages) {
       return response.status(201).json({
@@ -128,8 +148,6 @@ export class ArchiveController {
         data: [],
       });
     }
-
-    console.log('conversationMessages', conversationMessages);
 
     const authorIds = [];
     for (const message of conversationMessages) {
@@ -158,6 +176,30 @@ export class ArchiveController {
     return response.status(201).json({
       message: 'success',
       data: updatedMessages,
+    });
+  }
+
+  @Put('coversation/:conversationId')
+  async updateConversationMessages(
+    @Body()
+    data: {
+      userId: string;
+    },
+    @Param('conversationId') conversationId: string,
+    @Res() response: any,
+  ) {
+    const messages =
+      await this.archiveService.getConversationArchive(conversationId);
+    messages.forEach(async (message) => {
+      if (message.unreadBy.includes(data.userId)) {
+        message.unreadBy = message.unreadBy.filter(
+          (user) => user !== data.userId,
+        );
+      }
+    });
+    await this.archiveService.updateConersationMessages(messages);
+    return response.status(201).json({
+      message: 'success',
     });
   }
 

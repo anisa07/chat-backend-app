@@ -28,10 +28,6 @@ export class AuthService {
       throw new Error('Invalid token! Token not found!');
     }
 
-    if (userToken.token !== data.token) {
-      throw new Error('Invalid token');
-    }
-
     const payload = await this.jwtService.verifyAsync(userToken.token, {
       secret: process.env.JWT_SECRET_KEY,
     });

@@ -10,7 +10,6 @@ export class SocketConnectionService {
   private server: Server;
 
   handleConnection(socket: Socket, server: Server): void {
-    console.log('socket.handshake.query', socket.handshake.query);
     const userId: string =
       typeof socket.handshake.query.userId === 'string'
         ? socket.handshake.query.userId
@@ -27,7 +26,6 @@ export class SocketConnectionService {
   }
 
   sendMessage(userId: string, message: string) {
-    console.log(userId);
     const connectedSocket = this.connectedSockets.get(userId);
 
     if (connectedSocket) {

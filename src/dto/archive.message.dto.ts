@@ -3,4 +3,5 @@ export interface ArchiveMessageDTO {
   authorId: string; // userId
   messageId: string;
   conversationId: string;
+  unreadBy: string[];
 }

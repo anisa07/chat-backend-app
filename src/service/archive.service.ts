@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types, Document } from 'mongoose';
 import { MessageDTO } from '../dto/message.dto';
 import { Archive } from '../schema/archive.schema';
 import { APIFeatures } from 'src/helpers/APIFeatures';
@@ -91,12 +91,34 @@ export class ArchiveService {
     return this.usersService.getUsersByUserIds(participantIds);
   }
 
+  async checkUnreadMessagesConversationCount(
+    userId: string,
+    conversationIds: string[],
+  ) {
+    return this.archiveMessageModel
+      .find({
+        conversationId: { $in: conversationIds },
+      })
+      .where({ unreadBy: userId });
+  }
+
   async updateConversation(conversationId: string, ids: string[]) {
     return this.conversationModel.findOneAndUpdate(
       { conversationId },
       { participantIds: ids },
       { new: true },
     );
+  }
+
+  async updateConersationMessages(
+    messages: (Document<unknown, {}, ArchiveMessage> &
+      ArchiveMessage & {
+        _id: Types.ObjectId;
+      })[],
+  ) {
+    messages.forEach(async (message) => {
+      await message.save();
+    });
   }
 
   async createCoversation(conversation: ConversationDTO) {

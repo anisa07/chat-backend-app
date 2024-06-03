@@ -33,6 +33,11 @@ export class ArchiveMessage {
   })
   conversationId: string;
 
+  @Prop({
+    type: Array<String>,
+  })
+  unreadBy: string[];
+
   @Prop({ default: now() })
   createdAt: Date;
 

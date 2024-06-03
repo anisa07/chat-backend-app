@@ -9,8 +9,6 @@ import {
   Res,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-// import { AuthDTO } from 'src/dto/auth.dto';
-// import { JwtService } from '@nestjs/jwt';
 
 @Controller('auth')
 export class AuthController {
