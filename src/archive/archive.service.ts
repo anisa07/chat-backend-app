@@ -2,8 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types, Document } from 'mongoose';
 import { MessageDTO } from '../dto/message.dto';
-import { Archive } from '../schema/archive.schema';
-import { APIFeatures } from 'src/helpers/APIFeatures';
+// import { APIFeatures } from 'src/helpers/APIFeatures';
 // import { WebSocketServer } from '@nestjs/websockets';
 // import { Server } from 'socket.io';
 import { SocketConnectionService } from 'src/socket-connection/socket-connection.service';
@@ -11,12 +10,11 @@ import { Conversation } from 'src/schema/conversation.schema';
 import { ConversationDTO } from 'src/dto/conversation.dto';
 import { ArchiveMessageDTO } from 'src/dto/archive.message.dto';
 import { ArchiveMessage } from 'src/schema/archive.message.schema';
-import { UsersService } from './users.service';
+import { UsersService } from 'src/users/users.service';
 
 @Injectable()
 export class ArchiveService {
   constructor(
-    @InjectModel(Archive.name) private archiveModel: Model<Archive>,
     @InjectModel(Conversation.name)
     private conversationModel: Model<Conversation>,
     @InjectModel(ArchiveMessage.name)
@@ -133,12 +131,12 @@ export class ArchiveService {
   //   return this.historyModel.findOne({ conversationId });
   // }
 
-  async getMessages(query: any) {
-    const features = new APIFeatures(this.archiveModel.find(), query)
-      .filter()
-      .sort()
-      .limit()
-      .pagination();
-    return await features.mongooseQuery;
-  }
+  // async getMessages(query: any) {
+  //   const features = new APIFeatures(this.archiveModel.find(), query)
+  //     .filter()
+  //     .sort()
+  //     .limit()
+  //     .pagination();
+  //   return await features.mongooseQuery;
+  // }
 }

@@ -1,5 +1,5 @@
 import { Module, Global } from '@nestjs/common';
-import { ArchiveService } from './service/archive.service';
+import { ArchiveService } from './archive/archive.service';
 
 @Global()
 @Module({

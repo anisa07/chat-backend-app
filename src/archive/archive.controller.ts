@@ -9,9 +9,9 @@ import {
   Res,
 } from '@nestjs/common';
 import { MessageDTO } from 'src/dto/message.dto';
-import { ArchiveService } from 'src/service/archive.service';
 import { createId } from 'src/helpers/helpers';
 import { ArchiveMessageDTO } from 'src/dto/archive.message.dto';
+import { ArchiveService } from './archive.service';
 
 @Controller('archive')
 export class ArchiveController {
@@ -203,13 +203,13 @@ export class ArchiveController {
     });
   }
 
-  @Get()
-  async getTest(@Res() response: any, @Req() request: any) {
-    const messages = await this.archiveService.getMessages(request.query);
+  // @Get()
+  // async getTest(@Res() response: any, @Req() request: any) {
+  //   const messages = await this.archiveService.getMessages(request.query);
 
-    return response.status(201).json({
-      message: 'success',
-      data: messages,
-    });
-  }
+  //   return response.status(201).json({
+  //     message: 'success',
+  //     data: messages,
+  //   });
+  // }
 }

@@ -13,15 +13,15 @@ import {
   OnGatewayConnection,
   OnGatewayDisconnect,
   OnGatewayInit,
-  SubscribeMessage,
+  // SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
 
 import { Server, Socket } from 'socket.io';
-import { DefaultEventsMap } from 'socket.io/dist/typed-events';
-import { ArchiveService } from 'src/service/archive.service';
-import { UsersService } from 'src/service/users.service';
+// import { DefaultEventsMap } from 'socket.io/dist/typed-events';
+// import { ArchiveService } from 'src/archive/archive.service';
+// import { UsersService } from 'src/users/users.service';
 import { SocketConnectionService } from 'src/socket-connection/socket-connection.service';
 
 @WebSocketGateway(
