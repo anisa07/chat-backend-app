@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Param, Post, Req, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Put,
+  Req,
+  Res,
+} from '@nestjs/common';
 import { UsersDTO } from 'src/dto/users.dto';
 import { UsersService } from 'src/users/users.service';
 
@@ -33,6 +42,18 @@ export class UsersController {
     return response.status(201).json({
       message: 'success',
       data: user,
+    });
+  }
+
+  @Put(':userId')
+  async updateUser(
+    @Body()
+    data: UsersDTO,
+    @Res() response: any,
+  ) {
+    await this.usersService.updateUser(data);
+    return response.status(201).json({
+      message: 'success',
     });
   }
 }

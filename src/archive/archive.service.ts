@@ -39,10 +39,12 @@ export class ArchiveService {
           from: {
             name: user.name,
             userId: user.userId,
+            online: user.online,
           },
           createdAt: data.createdAt,
           messageId: data.messageId,
         }),
+        'message',
       );
     }
 
@@ -55,10 +57,12 @@ export class ArchiveService {
           from: {
             name: user.name,
             userId: user.userId,
+            online: user.online,
           },
           createdAt: data.createdAt,
           messageId: data.messageId,
         }),
+        'message',
       );
     }
   }
@@ -125,6 +129,23 @@ export class ArchiveService {
 
   async createArchiveMessage(archiveMessage: ArchiveMessageDTO) {
     return this.archiveMessageModel.create(archiveMessage);
+  }
+
+  async notifyParticipants(
+    participantIds: string[],
+    userId: string,
+    online: boolean,
+  ) {
+    for (const id of participantIds) {
+      this.socketConnectionService.sendMessage(
+        id,
+        JSON.stringify({
+          userId,
+          online,
+        }),
+        'user-online-status',
+      );
+    }
   }
 
   // async getHistory(conversationId: string) {

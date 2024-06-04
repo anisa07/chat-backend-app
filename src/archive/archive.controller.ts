@@ -69,6 +69,22 @@ export class ArchiveController {
     });
   }
 
+  @Post('notify-participants')
+  async notifyParticipants(
+    @Body() data: { userId: string; online: boolean; participantIds: string[] },
+    @Res() response: any,
+  ) {
+    await this.archiveService.notifyParticipants(
+      data.participantIds,
+      data.userId,
+      data.online,
+    );
+
+    return response.status(201).json({
+      message: 'success',
+    });
+  }
+
   @Get(':userId')
   async getAllUserConversations(
     @Res() response: any,

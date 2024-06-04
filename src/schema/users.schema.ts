@@ -18,6 +18,11 @@ export class Users {
     required: [true, 'UserId is required'],
   })
   userId: string;
+
+  @Prop({
+    type: Boolean,
+  })
+  online: boolean;
 }
 
 export const UsersSchema = SchemaFactory.createForClass(Users);

@@ -4,6 +4,7 @@ import { AuthService } from './auth.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Auth, AuthSchema } from 'src/schema/auth.schema';
 import { JwtModule } from '@nestjs/jwt';
+import { SocketConnectionModule } from 'src/socket-connection/socket-connection.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { JwtModule } from '@nestjs/jwt';
       secret: process.env.JWT_SECRET_KEY,
       signOptions: { expiresIn: '1d' },
     }),
+    // SocketConnectionModule,
   ],
   controllers: [AuthController],
   providers: [AuthService],

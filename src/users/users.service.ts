@@ -34,4 +34,14 @@ export class UsersService {
   async getUser(userId: string) {
     return this.userModel.findOne({ userId }).exec();
   }
+
+  async updateUser(data: UsersDTO) {
+    return this.userModel.updateOne(
+      { userId: data.userId },
+      { online: data.online },
+      {
+        new: true,
+      },
+    );
+  }
 }

@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { SubscribeMessage } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 
 @Injectable()
@@ -25,11 +26,11 @@ export class SocketConnectionService {
     // Handle other events and messages from the client
   }
 
-  sendMessage(userId: string, message: string) {
+  sendMessage(userId: string, message: string, messayType: string) {
     const connectedSocket = this.connectedSockets.get(userId);
 
     if (connectedSocket) {
-      connectedSocket.emit('message', message);
+      connectedSocket.emit(messayType, message);
     }
     // console.log('connectedClient', this.socket.id);
     // if (connectedClient) {
@@ -38,6 +39,17 @@ export class SocketConnectionService {
     // this.socket.to(this.socket.id).emit('message', message);
     // }
   }
+
+  // @SubscribeMessage('notification')
+  // handlenNotification(client: any, data: any) {
+  //   //   this.logger.log(`Message received from client id: ${client.id}`);
+  //   //   this.logger.debug(`Payload: ${JSON.stringify(data)}`);
+  //   //   this.socketConnectionService.sendNotification(data.userId2, data.message);
+  //   //   return {
+  //   //     event: 'pong',
+  //   //     data,
+  //   //   };
+  // }
 
   // Add more methods for handling events, messages, etc.
 }

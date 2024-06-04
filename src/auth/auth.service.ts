@@ -4,12 +4,14 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { AuthDTO } from 'src/dto/auth.dto';
 import { Auth } from 'src/schema/auth.schema';
+import { SocketConnectionService } from 'src/socket-connection/socket-connection.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     @InjectModel(Auth.name) private authModel: Model<Auth>,
     private jwtService: JwtService,
+    // private socketConnectionService: SocketConnectionService,
   ) {}
 
   async createToken(userId: string) {
