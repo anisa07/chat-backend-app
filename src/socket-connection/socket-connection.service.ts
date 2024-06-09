@@ -32,24 +32,42 @@ export class SocketConnectionService {
     if (connectedSocket) {
       connectedSocket.emit(messayType, message);
     }
-    // console.log('connectedClient', this.socket.id);
-    // if (connectedClient) {
-    // console.log('message', message, this.socket.id);
-    // this.server.to(this.socket.id).emit('message', message);
-    // this.socket.to(this.socket.id).emit('message', message);
-    // }
   }
 
-  // @SubscribeMessage('notification')
-  // handlenNotification(client: any, data: any) {
-  //   //   this.logger.log(`Message received from client id: ${client.id}`);
-  //   //   this.logger.debug(`Payload: ${JSON.stringify(data)}`);
-  //   //   this.socketConnectionService.sendNotification(data.userId2, data.message);
-  //   //   return {
-  //   //     event: 'pong',
-  //   //     data,
-  //   //   };
+  // // @SubscribeMessage('notification')
+  // handlenNotification(_: any, message: string) {
+  //   // console.log('notification', JSON.parse(message));
+  //   const data = JSON.parse(message);
+  //   for (const id of data.participantIds) {
+  //     const connectedSocket = this.connectedSockets.get(id);
+  //     if (connectedSocket) {
+  //       connectedSocket.emit(
+  //         'user-online-status',
+  //         JSON.stringify({
+  //           userId: data.userId,
+  //           online: data.online,
+  //         }),
+  //       );
+  //     }
+  //   }
   // }
 
-  // Add more methods for handling events, messages, etc.
+  // @SubscribeMessage('user-typing')
+  // handlenTyping(_: any, message: string) {
+  //   const data = JSON.parse(message);
+  //   for (const id of data.participantIds) {
+  //     const connectedSocket = this.connectedSockets.get(id);
+  //     if (connectedSocket) {
+  //       connectedSocket.emit(
+  //         'typing',
+  //         JSON.stringify({
+  //           conversationId: data.conversationId,
+  //           user: data.user,
+  //           userId: data.userId,
+  //           typing: data.typing,
+  //         }),
+  //       );
+  //     }
+  //   }
+  // }
 }

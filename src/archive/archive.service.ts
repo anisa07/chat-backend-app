@@ -131,22 +131,22 @@ export class ArchiveService {
     return this.archiveMessageModel.create(archiveMessage);
   }
 
-  async notifyParticipants(
-    participantIds: string[],
-    userId: string,
-    online: boolean,
-  ) {
-    for (const id of participantIds) {
-      this.socketConnectionService.sendMessage(
-        id,
-        JSON.stringify({
-          userId,
-          online,
-        }),
-        'user-online-status',
-      );
-    }
-  }
+  // async notifyParticipants(
+  //   participantIds: string[],
+  //   userId: string,
+  //   online: boolean,
+  // ) {
+  //   for (const id of participantIds) {
+  //     this.socketConnectionService.sendMessage(
+  //       id,
+  //       JSON.stringify({
+  //         userId,
+  //         online,
+  //       }),
+  //       'user-online-status',
+  //     );
+  //   }
+  // }
 
   // async getHistory(conversationId: string) {
   //   return this.historyModel.findOne({ conversationId });

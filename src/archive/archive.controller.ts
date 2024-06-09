@@ -69,21 +69,21 @@ export class ArchiveController {
     });
   }
 
-  @Post('notify-participants')
-  async notifyParticipants(
-    @Body() data: { userId: string; online: boolean; participantIds: string[] },
-    @Res() response: any,
-  ) {
-    await this.archiveService.notifyParticipants(
-      data.participantIds,
-      data.userId,
-      data.online,
-    );
+  // @Post('notify-participants')
+  // async notifyParticipants(
+  //   @Body() data: { userId: string; online: boolean; participantIds: string[] },
+  //   @Res() response: any,
+  // ) {
+  //   // await this.archiveService.notifyParticipants(
+  //   //   data.participantIds,
+  //   //   data.userId,
+  //   //   data.online,
+  //   // );
 
-    return response.status(201).json({
-      message: 'success',
-    });
-  }
+  //   return response.status(201).json({
+  //     message: 'success',
+  //   });
+  // }
 
   @Get(':userId')
   async getAllUserConversations(
@@ -150,11 +150,22 @@ export class ArchiveController {
     });
   }
 
-  @Get('coversation/:conversationId')
+  @Get('coversation/:userId/:conversationId')
   async getUserConversation(
     @Res() response: any,
+    @Param('userId') userId: string,
     @Param('conversationId') conversationId: string,
   ) {
+    const conversation =
+      await this.archiveService.getConversation(conversationId);
+
+    if (conversation && !conversation.participantIds.includes(userId)) {
+      return response.status(201).json({
+        message: 'success',
+        data: [],
+      });
+    }
+
     const conversationMessages =
       await this.archiveService.getConversationArchive(conversationId);
 

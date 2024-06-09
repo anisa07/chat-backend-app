@@ -13,6 +13,7 @@ import {
   OnGatewayConnection,
   OnGatewayDisconnect,
   OnGatewayInit,
+  SubscribeMessage,
   // SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
@@ -69,15 +70,36 @@ export class ChatGateway
     this.logger.log(`Cliend id:${client.id} disconnected`);
   }
 
-  // @SubscribeMessage('message')
-  // handleMessage(client: any, data: any) {
-  //   this.logger.log(`Message received from client id: ${client.id}`);
-  //   this.logger.debug(`Payload: ${JSON.stringify(data)}`);
+  @SubscribeMessage('notification')
+  handleMessage(_: any, message: any) {
+    console.log('notification', JSON.parse(message));
+    const data = JSON.parse(message);
+    for (const id of data.participantIds) {
+      this.socketConnectionService.sendMessage(
+        id,
+        JSON.stringify({
+          userId: data.userId,
+          online: data.online,
+        }),
+        'user-online-status',
+      );
+    }
+  }
 
-  //   this.socketConnectionService.sendNotification(data.userId2, data.message);
-  //   return {
-  //     event: 'pong',
-  //     data,
-  //   };
-  // }
+  @SubscribeMessage('user-typing')
+  handlenTyping(_: any, message: string) {
+    const data = JSON.parse(message);
+    for (const id of data.participantIds) {
+      this.socketConnectionService.sendMessage(
+        id,
+        JSON.stringify({
+          conversationId: data.conversationId,
+          user: data.user,
+          userId: data.userId,
+          typing: data.typing,
+        }),
+        'typing',
+      );
+    }
+  }
 }
