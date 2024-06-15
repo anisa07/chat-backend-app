@@ -46,8 +46,10 @@ export class ArchiveController {
       message: data.message,
       messageId: createId(),
       conversationId: conversation.conversationId,
-      unreadBy: data.toIds,
+      unreadBy: data.toIds.map((id) => id),
     };
+
+    console.log(archiveMessage);
 
     const message =
       await this.archiveService.createArchiveMessage(archiveMessage);
@@ -120,7 +122,6 @@ export class ArchiveController {
         userId,
         conversations.map((conversation) => conversation.conversationId),
       );
-    console.log('unreadConversations', unreadConversations);
 
     const participantsMap = new Map();
     for (const user of participantUsers) {
@@ -206,7 +207,7 @@ export class ArchiveController {
     });
   }
 
-  @Put('coversation/:conversationId')
+  @Put('coversation/:conversationId/messages')
   async updateConversationMessages(
     @Body()
     data: {
@@ -225,6 +226,61 @@ export class ArchiveController {
       }
     });
     await this.archiveService.updateConersationMessages(messages);
+    return response.status(201).json({
+      message: 'success',
+    });
+  }
+
+  @Put('coversation/:conversationId')
+  async updateConversation(
+    @Body()
+    data: {
+      conversationId: string;
+      newUser: { userId: string; name: string };
+      shareOldMessages: boolean;
+    },
+    @Param('conversationId') conversationId: string,
+    @Res() response: any,
+  ) {
+    let conversation =
+      await this.archiveService.getConversation(conversationId);
+
+    if (!conversation) {
+      return response.status(201).json({
+        message: 'nothing to update',
+      });
+    }
+
+    conversation.participantIds.push(data.newUser.userId);
+
+    if (data.shareOldMessages) {
+      const messages =
+        await this.archiveService.getConversationArchive(conversationId);
+      messages.forEach(async (message) => {
+        message.unreadBy.push(data.newUser.userId);
+      });
+      await this.archiveService.updateConersationMessages(messages);
+    }
+
+    conversation = await this.archiveService.updateConversation(
+      conversationId,
+      conversation.participantIds,
+    );
+
+    const participantUsers = await this.archiveService.getAllParticipants(
+      conversation.participantIds,
+    );
+
+    // notify new user about the conversation
+    this.archiveService.notifyUser(
+      data.newUser.userId,
+      JSON.stringify({
+        conversationId,
+        participants: participantUsers,
+      }),
+      'join-conversation',
+    );
+
     return response.status(201).json({
       message: 'success',
     });

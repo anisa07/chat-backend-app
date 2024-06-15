@@ -3,7 +3,7 @@ import { HydratedDocument, now } from 'mongoose';
 
 export type ArchiveMessageDocument = HydratedDocument<ArchiveMessage>;
 
-@Schema()
+@Schema({ versionKey: false })
 export class ArchiveMessage {
   @Prop({
     type: String,

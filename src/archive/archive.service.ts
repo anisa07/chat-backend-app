@@ -31,7 +31,7 @@ export class ArchiveService {
 
     // check if a user doesn't send a message to themself so also send message back to a user to show the message in history
     if (!data.toIds.includes(data.fromId)) {
-      this.socketConnectionService.sendMessage(
+      this.notifyUser(
         user.userId,
         JSON.stringify({
           message: data.message,
@@ -49,7 +49,7 @@ export class ArchiveService {
     }
 
     for (const userId of data.toIds) {
-      this.socketConnectionService.sendMessage(
+      this.notifyUser(
         userId,
         JSON.stringify({
           message: data.message,
@@ -129,6 +129,14 @@ export class ArchiveService {
 
   async createArchiveMessage(archiveMessage: ArchiveMessageDTO) {
     return this.archiveMessageModel.create(archiveMessage);
+  }
+
+  notifyUser(userId: string, message: string, messayType: string) {
+    return this.socketConnectionService.sendMessage(
+      userId,
+      message,
+      messayType,
+    );
   }
 
   // async notifyParticipants(
