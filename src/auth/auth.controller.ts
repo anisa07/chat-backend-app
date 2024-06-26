@@ -1,73 +1,33 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Post,
-  Req,
-  Res,
-} from '@nestjs/common';
+import { Body, Controller, Post, Req, Res } from '@nestjs/common';
 import { AuthService } from './auth.service';
+import { Request, Response } from 'express';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Post()
-  async createToken(@Body() data: { userId: string }, @Res() response: any) {
-    const token = await this.authService.createToken(data.userId);
-
-    return response.status(201).json({
-      message: 'success',
-      token,
-    });
-  }
-
-  @Get(':userId')
+  @Post('verifyToken')
   async verifyToken(
-    @Res() response: any,
-    @Param('userId') userId: string,
-    @Req() request: any,
-  ) {
-    const token = request.headers.token ?? '';
+    @Res() response: Response,
+    @Req() request: Request,
+  ): Promise<any> {
+    const idToken = request.headers.authorization.split('Bearer ')[1];
+    const userId = request.headers.userid;
+
+    if (!idToken) {
+      throw new Error('No ID token provided');
+    }
 
     try {
-      await this.authService.getToken({
-        userId,
-        token,
-      });
-      return response.status(201).json({
-        message: 'success',
-        verified: true,
-      });
-    } catch (error) {
-      if (
-        error.message === 'Invalid token! Token not found!' ||
-        error.message === 'Invalid token'
-      ) {
-        return response.status(400).json({
-          message: 'invalid user data',
-          verified: false,
-        });
+      const decodedToken = await this.authService.verifyToken(idToken);
+
+      if (decodedToken.uid !== userId) {
+        throw new Error('User ID does not match token');
       }
-      this.authService.deleteToken(request.params.userId);
-      return response.status(401).json({
-        message: 'token is expired',
-        verified: false,
-      });
+      return response.status(200).send(decodedToken);
+    } catch (error) {
+      console.log('Error verifying ID token:', error);
+      throw error;
     }
-  }
-
-  @Delete(':userId')
-  async deleteToken(@Res() response: any, @Req() request: any) {
-    console.log('deleteToken request.params', request.params);
-
-    await this.authService.deleteToken(request.params.userId);
-
-    return response.status(201).json({
-      message: 'success',
-      data: 'Token deleted',
-    });
   }
 }

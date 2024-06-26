@@ -1,24 +1,16 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  Post,
-  Put,
-  Req,
-  Res,
-} from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put, Res } from '@nestjs/common';
 import { MessageDTO } from 'src/dto/message.dto';
 import { createId } from 'src/helpers/helpers';
 import { ArchiveMessageDTO } from 'src/dto/archive.message.dto';
 import { ArchiveService } from './archive.service';
+import { Response } from 'express';
 
 @Controller('archive')
 export class ArchiveController {
   constructor(private readonly archiveService: ArchiveService) {}
 
   @Post()
-  async saveMessage(@Body() data: MessageDTO, @Res() response: any) {
+  async saveMessage(@Body() data: MessageDTO, @Res() response: Response) {
     const participantIds = Array.from(new Set([data.fromId, ...data.toIds]));
     let conversation;
 
@@ -29,16 +21,18 @@ export class ArchiveController {
 
       // check participant better in a case new user joins and old one leaves
       if (conversation.participantIds.length !== data.toIds.length + 1) {
-        conversation = await this.archiveService.updateConversation(
-          data.conversationId,
+        conversation = {
+          ...conversation,
           participantIds,
-        );
+        };
+        await this.archiveService.updateConversation(conversation);
       }
     } else {
-      conversation = await this.archiveService.createCoversation({
+      conversation = {
         conversationId: createId(),
         participantIds,
-      });
+      };
+      await this.archiveService.createConversation(conversation);
     }
 
     const archiveMessage: ArchiveMessageDTO = {
@@ -47,59 +41,37 @@ export class ArchiveController {
       messageId: createId(),
       conversationId: conversation.conversationId,
       unreadBy: data.toIds.map((id) => id),
+      createdAt: new Date(),
     };
 
     console.log(archiveMessage);
 
-    const message =
-      await this.archiveService.createArchiveMessage(archiveMessage);
+    await this.archiveService.createArchiveMessage(archiveMessage);
 
     this.archiveService.sendMessage({
       ...data,
-      messageId: message.messageId,
-      createdAt: message.createdAt,
+      messageId: archiveMessage.messageId,
+      createdAt: archiveMessage.createdAt,
       conversationId: conversation.conversationId,
       // mark that message is read by the participants on the client side
     });
 
-    return response.status(201).json({
-      message: 'success',
-      data: {
-        ...data,
-        conversationId: conversation.conversationId,
-      },
+    return response.status(200).send({
+      ...data,
+      conversationId: conversation.conversationId,
     });
   }
 
-  // @Post('notify-participants')
-  // async notifyParticipants(
-  //   @Body() data: { userId: string; online: boolean; participantIds: string[] },
-  //   @Res() response: any,
-  // ) {
-  //   // await this.archiveService.notifyParticipants(
-  //   //   data.participantIds,
-  //   //   data.userId,
-  //   //   data.online,
-  //   // );
-
-  //   return response.status(201).json({
-  //     message: 'success',
-  //   });
-  // }
-
   @Get(':userId')
   async getAllUserConversations(
-    @Res() response: any,
+    @Res() response: Response,
     @Param('userId') userId: string,
   ) {
     const conversations = await this.archiveService.getAllConversation(userId);
     const updatedConversations = [];
 
-    if (!conversations) {
-      return response.status(201).json({
-        message: 'success',
-        data: [],
-      });
+    if (!conversations || conversations.length === 0) {
+      return response.status(201).send([]);
     }
 
     const userIds = [];
@@ -107,18 +79,18 @@ export class ArchiveController {
       userIds.push(...conversation.participantIds);
     }
 
-    const participantUsers =
-      await this.archiveService.getAllParticipants(userIds);
+    let participantUsers = [];
+
+    if (userIds.length > 0) {
+      participantUsers = await this.archiveService.getAllParticipants(userIds);
+    }
 
     if (!participantUsers) {
-      return response.status(201).json({
-        message: 'success',
-        data: [],
-      });
+      return response.status(201).send([]);
     }
 
     const unreadConversations =
-      await this.archiveService.checkUnreadMessagesConversationCount(
+      await this.archiveService.getUnreadMessagesConversations(
         userId,
         conversations.map((conversation) => conversation.conversationId),
       );
@@ -136,8 +108,8 @@ export class ArchiveController {
       updatedConversations.push({
         conversationId: conversation.conversationId,
         participants: conversationParticipant,
-        createdAt: conversation.createdAt,
-        updatedAt: conversation.updatedAt,
+        createdAt: conversation.createdAt.toDate(),
+        updatedAt: conversation.updatedAt.toDate(),
         newMessage: !!unreadConversations.find(
           (unreadConversation) =>
             unreadConversation.conversationId === conversation.conversationId,
@@ -145,15 +117,12 @@ export class ArchiveController {
       });
     }
 
-    return response.status(201).json({
-      message: 'success',
-      data: updatedConversations,
-    });
+    return response.status(200).send(updatedConversations);
   }
 
   @Get('coversation/:userId/:conversationId')
   async getUserConversation(
-    @Res() response: any,
+    @Res() response: Response,
     @Param('userId') userId: string,
     @Param('conversationId') conversationId: string,
   ) {
@@ -161,20 +130,14 @@ export class ArchiveController {
       await this.archiveService.getConversation(conversationId);
 
     if (conversation && !conversation.participantIds.includes(userId)) {
-      return response.status(201).json({
-        message: 'success',
-        data: [],
-      });
+      return response.status(200).send([]);
     }
 
     const conversationMessages =
       await this.archiveService.getConversationArchive(conversationId);
 
     if (!conversationMessages) {
-      return response.status(201).json({
-        message: 'success',
-        data: [],
-      });
+      return response.status(200).send([]);
     }
 
     const authorIds = [];
@@ -196,15 +159,12 @@ export class ArchiveController {
         message: message.message,
         messageId: message.messageId,
         author: authorsMap.get(message.authorId),
-        createdAt: message.createdAt,
-        updatedAt: message.updatedAt,
+        createdAt: message.createdAt.toDate(),
+        updatedAt: message.updatedAt.toDate(),
       });
     }
 
-    return response.status(201).json({
-      message: 'success',
-      data: updatedMessages,
-    });
+    return response.status(201).send(updatedMessages);
   }
 
   @Put('coversation/:conversationId/messages')
@@ -214,7 +174,7 @@ export class ArchiveController {
       userId: string;
     },
     @Param('conversationId') conversationId: string,
-    @Res() response: any,
+    @Res() response: Response,
   ) {
     const messages =
       await this.archiveService.getConversationArchive(conversationId);
@@ -225,10 +185,11 @@ export class ArchiveController {
         );
       }
     });
-    await this.archiveService.updateConersationMessages(messages);
-    return response.status(201).json({
-      message: 'success',
-    });
+    await this.archiveService.updateConersationMessages(
+      messages,
+      messages.map((message) => message.messageId),
+    );
+    return response.status(201).send();
   }
 
   @Put('coversation/:conversationId')
@@ -240,15 +201,13 @@ export class ArchiveController {
       shareOldMessages: boolean;
     },
     @Param('conversationId') conversationId: string,
-    @Res() response: any,
+    @Res() response: Response,
   ) {
     let conversation =
       await this.archiveService.getConversation(conversationId);
 
     if (!conversation) {
-      return response.status(201).json({
-        message: 'nothing to update',
-      });
+      return response.status(201).send();
     }
 
     conversation.participantIds.push(data.newUser.userId);
@@ -259,13 +218,13 @@ export class ArchiveController {
       messages.forEach(async (message) => {
         message.unreadBy.push(data.newUser.userId);
       });
-      await this.archiveService.updateConersationMessages(messages);
+      await this.archiveService.updateConersationMessages(
+        messages,
+        messages.map((message) => message.messageId),
+      );
     }
 
-    conversation = await this.archiveService.updateConversation(
-      conversationId,
-      conversation.participantIds,
-    );
+    await this.archiveService.updateConversation(conversation);
 
     const participantUsers = await this.archiveService.getAllParticipants(
       conversation.participantIds,
@@ -285,14 +244,4 @@ export class ArchiveController {
       message: 'success',
     });
   }
-
-  // @Get()
-  // async getTest(@Res() response: any, @Req() request: any) {
-  //   const messages = await this.archiveService.getMessages(request.query);
-
-  //   return response.status(201).json({
-  //     message: 'success',
-  //     data: messages,
-  //   });
-  // }
 }

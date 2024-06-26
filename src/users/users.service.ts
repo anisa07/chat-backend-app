@@ -1,47 +1,41 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { APIFeatures } from 'src/helpers/APIFeatures';
+// import { InjectModel } from '@nestjs/mongoose';
+// import { Model } from 'mongoose';
 import { UsersDTO } from 'src/dto/users.dto';
-import { Users } from 'src/schema/users.schema';
+// import { Users } from 'src/schema/users.schema';
+import { FirebaseService } from 'src/firebase/firebase.service';
 
 @Injectable()
 export class UsersService {
-  constructor(@InjectModel(Users.name) private userModel: Model<Users>) {}
+  constructor(
+    // @InjectModel(Users.name) private userModel: Model<Users>,
+    private readonly firebaseService: FirebaseService,
+  ) {}
 
   async createUser(data: UsersDTO) {
-    const user = this.userModel.create(data);
-
-    return user;
+    return this.firebaseService.saveValue('users', data.userId, data);
   }
 
-  async getUsers(query?: any) {
-    const features = new APIFeatures(this.userModel.find(), query)
-      .filter()
-      .sort()
-      .limit()
-      .pagination();
-
-    return await features.mongooseQuery;
+  async getUsers(query: Record<string, any>) {
+    // TODO create better solution for filtering
+    const queryKey = Object.keys(query)[0];
+    const users = await this.firebaseService.getSpecificValue(
+      'users',
+      queryKey,
+      query[queryKey],
+    );
+    return users || [];
   }
 
   async getUsersByUserIds(ids: string[]) {
-    return this.userModel.find({
-      userId: { $in: ids },
-    });
+    return this.firebaseService.getUsersCollections(ids);
   }
 
   async getUser(userId: string) {
-    return this.userModel.findOne({ userId }).exec();
+    return this.firebaseService.getValue(`users`, userId);
   }
 
   async updateUser(data: UsersDTO) {
-    return this.userModel.updateOne(
-      { userId: data.userId },
-      { online: data.online },
-      {
-        new: true,
-      },
-    );
+    return this.firebaseService.updateValue(`users`, data.userId, data);
   }
 }

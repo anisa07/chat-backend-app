@@ -11,17 +11,19 @@ import { ConversationDTO } from 'src/dto/conversation.dto';
 import { ArchiveMessageDTO } from 'src/dto/archive.message.dto';
 import { ArchiveMessage } from 'src/schema/archive.message.schema';
 import { UsersService } from 'src/users/users.service';
+import { FirebaseService } from 'src/firebase/firebase.service';
 
 @Injectable()
 export class ArchiveService {
   constructor(
-    @InjectModel(Conversation.name)
-    private conversationModel: Model<Conversation>,
-    @InjectModel(ArchiveMessage.name)
-    private archiveMessageModel: Model<ArchiveMessage>,
+    // @InjectModel(Conversation.name)
+    // // private conversationModel: Model<Conversation>,
+    // @InjectModel(ArchiveMessage.name)
+    // private archiveMessageModel: Model<ArchiveMessage>,
 
     private socketConnectionService: SocketConnectionService,
     private readonly usersService: UsersService,
+    private readonly firebaseService: FirebaseService,
   ) {}
 
   async sendMessage(data: MessageDTO) {
@@ -68,67 +70,81 @@ export class ArchiveService {
   }
 
   async getConversation(conversationId: string) {
-    return this.conversationModel.findOne({ conversationId });
+    return this.firebaseService.getValue('conversations', conversationId);
   }
 
-  // async getConversationHistory(conversationId: string) {
-  //   return this.historyModel.findOne({ conversationId });
-  // }
-
   async getConversationArchive(conversationId: string) {
-    return this.archiveMessageModel.find({ conversationId });
+    return this.firebaseService.getSpecificValue(
+      'archiveMessages',
+      'conversationId',
+      conversationId,
+    );
+    // return this.archiveMessageModel.find({ conversationId });
   }
 
   async getConversationMessages(messageIds: string[]) {
-    return this.archiveMessageModel.find({
-      messageId: { $in: messageIds },
-    });
+    return this.firebaseService.getConversationMessages(messageIds);
+    // return this.archiveMessageModel.find({
+    //   messageId: { $in: messageIds },
+    // });
   }
 
   async getAllConversation(userId: string) {
-    return this.conversationModel.find({ participantIds: userId });
+    return this.firebaseService.getAllUserConversation(userId);
   }
 
   async getAllParticipants(participantIds: string[]) {
     return this.usersService.getUsersByUserIds(participantIds);
   }
 
-  async checkUnreadMessagesConversationCount(
+  async getUnreadMessagesConversations(
     userId: string,
     conversationIds: string[],
   ) {
-    return this.archiveMessageModel
-      .find({
-        conversationId: { $in: conversationIds },
-      })
-      .where({ unreadBy: userId });
+    // return this.archiveMessageModel
+    //   .find({
+    //     conversationId: { $in: conversationIds },
+    //   })
+    //   .where({ unreadBy: userId });
+    return this.firebaseService.getUserUnreadMessages(userId, conversationIds);
   }
 
-  async updateConversation(conversationId: string, ids: string[]) {
-    return this.conversationModel.findOneAndUpdate(
-      { conversationId },
-      { participantIds: ids },
-      { new: true },
+  async updateConversation(conversation: ConversationDTO) {
+    await this.firebaseService.updateValue(
+      'conversations',
+      conversation.conversationId,
+      conversation,
     );
   }
 
   async updateConersationMessages(
-    messages: (Document<unknown, {}, ArchiveMessage> &
-      ArchiveMessage & {
-        _id: Types.ObjectId;
-      })[],
+    messages: ArchiveMessage[],
+    messageIds: string[],
   ) {
-    messages.forEach(async (message) => {
-      await message.save();
-    });
+    await this.firebaseService.updateSeveralValues(
+      'archiveMessages',
+      messageIds,
+      messages,
+    );
+    // messages.forEach(async (message) => {
+    //   await message.save();
+    // });
   }
 
-  async createCoversation(conversation: ConversationDTO) {
-    return this.conversationModel.create(conversation);
+  async createConversation(conversation: ConversationDTO) {
+    await this.firebaseService.saveValue(
+      'conversations',
+      conversation.conversationId,
+      conversation,
+    );
   }
 
   async createArchiveMessage(archiveMessage: ArchiveMessageDTO) {
-    return this.archiveMessageModel.create(archiveMessage);
+    await this.firebaseService.saveValue(
+      'archiveMessages',
+      archiveMessage.messageId,
+      archiveMessage,
+    );
   }
 
   notifyUser(userId: string, message: string, messayType: string) {
@@ -139,33 +155,12 @@ export class ArchiveService {
     );
   }
 
-  // async notifyParticipants(
-  //   participantIds: string[],
-  //   userId: string,
-  //   online: boolean,
-  // ) {
-  //   for (const id of participantIds) {
-  //     this.socketConnectionService.sendMessage(
-  //       id,
-  //       JSON.stringify({
-  //         userId,
-  //         online,
-  //       }),
-  //       'user-online-status',
-  //     );
-  //   }
-  // }
+  async testPush() {
+    // return this.firebaseService.saveValue('users/test1', { test2: 'test3' });
+  }
 
-  // async getHistory(conversationId: string) {
-  //   return this.historyModel.findOne({ conversationId });
-  // }
-
-  // async getMessages(query: any) {
-  //   const features = new APIFeatures(this.archiveModel.find(), query)
-  //     .filter()
-  //     .sort()
-  //     .limit()
-  //     .pagination();
-  //   return await features.mongooseQuery;
-  // }
+  async testGet() {
+    console.log('testGet');
+    // return this.firebaseService.getValue('test');
+  }
 }
