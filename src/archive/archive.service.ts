@@ -6,7 +6,7 @@ import { MessageDTO } from '../dto/message.dto';
 // import { WebSocketServer } from '@nestjs/websockets';
 // import { Server } from 'socket.io';
 import { SocketConnectionService } from 'src/socket-connection/socket-connection.service';
-import { Conversation } from 'src/schema/conversation.schema';
+// import { Conversation } from 'src/schema/conversation.schema';
 import { ConversationDTO } from 'src/dto/conversation.dto';
 import { ArchiveMessageDTO } from 'src/dto/archive.message.dto';
 import { ArchiveMessage } from 'src/schema/archive.message.schema';
@@ -27,42 +27,23 @@ export class ArchiveService {
   ) {}
 
   async sendMessage(data: MessageDTO) {
-    const user = await this.usersService.getUser(data.fromId);
-
-    if (!user) return;
-
-    // check if a user doesn't send a message to themself so also send message back to a user to show the message in history
-    if (!data.toIds.includes(data.fromId)) {
+    const messageAuthor = data.participantUsers.find(
+      (user) => user.userId === data.fromId,
+    );
+    for (const user of data.participantUsers) {
       this.notifyUser(
         user.userId,
         JSON.stringify({
           message: data.message,
-          conversationId: data.conversationId,
           from: {
-            name: user.name,
-            userId: user.userId,
-            online: user.online,
+            userId: messageAuthor?.userId,
+            name: messageAuthor?.name,
+            online: messageAuthor?.online,
           },
           createdAt: data.createdAt,
           messageId: data.messageId,
-        }),
-        'message',
-      );
-    }
-
-    for (const userId of data.toIds) {
-      this.notifyUser(
-        userId,
-        JSON.stringify({
-          message: data.message,
           conversationId: data.conversationId,
-          from: {
-            name: user.name,
-            userId: user.userId,
-            online: user.online,
-          },
-          createdAt: data.createdAt,
-          messageId: data.messageId,
+          participants: data.participantUsers,
         }),
         'message',
       );
@@ -153,14 +134,5 @@ export class ArchiveService {
       message,
       messayType,
     );
-  }
-
-  async testPush() {
-    // return this.firebaseService.saveValue('users/test1', { test2: 'test3' });
-  }
-
-  async testGet() {
-    console.log('testGet');
-    // return this.firebaseService.getValue('test');
   }
 }

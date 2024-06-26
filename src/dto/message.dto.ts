@@ -1,3 +1,5 @@
+import { UsersDTO } from './users.dto';
+
 export interface MessageDTO {
   message: string;
   fromId: string; // userId
@@ -6,4 +8,5 @@ export interface MessageDTO {
   conversationId: string;
   createdAt?: Date;
   updatedAt?: Date;
+  participantUsers: UsersDTO[];
 }

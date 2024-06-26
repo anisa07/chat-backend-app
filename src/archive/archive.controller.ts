@@ -25,6 +25,7 @@ export class ArchiveController {
           ...conversation,
           participantIds,
         };
+
         await this.archiveService.updateConversation(conversation);
       }
     } else {
@@ -32,6 +33,7 @@ export class ArchiveController {
         conversationId: createId(),
         participantIds,
       };
+
       await this.archiveService.createConversation(conversation);
     }
 
@@ -44,12 +46,14 @@ export class ArchiveController {
       createdAt: new Date(),
     };
 
-    console.log(archiveMessage);
-
     await this.archiveService.createArchiveMessage(archiveMessage);
+
+    const participantUsers =
+      await this.archiveService.getAllParticipants(participantIds);
 
     this.archiveService.sendMessage({
       ...data,
+      participantUsers,
       messageId: archiveMessage.messageId,
       createdAt: archiveMessage.createdAt,
       conversationId: conversation.conversationId,

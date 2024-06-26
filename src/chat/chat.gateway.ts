@@ -72,7 +72,7 @@ export class ChatGateway
 
   @SubscribeMessage('notification')
   handleMessage(_: any, message: any) {
-    console.log('notification', JSON.parse(message));
+    // console.log('notification', JSON.parse(message));
     const data = JSON.parse(message);
     for (const id of data.participantIds) {
       this.socketConnectionService.sendMessage(
