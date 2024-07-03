@@ -38,7 +38,9 @@ export class ArchiveService {
           from: {
             userId: messageAuthor?.userId,
             name: messageAuthor?.name,
-            online: messageAuthor?.online,
+            online: this.socketConnectionService.userIsConnected(
+              messageAuthor?.userId,
+            ),
           },
           createdAt: data.createdAt,
           messageId: data.messageId,
@@ -134,5 +136,9 @@ export class ArchiveService {
       message,
       messayType,
     );
+  }
+
+  userIsConnected(userId: string) {
+    return this.socketConnectionService.userIsConnected(userId);
   }
 }

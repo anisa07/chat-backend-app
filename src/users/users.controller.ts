@@ -35,7 +35,10 @@ export class UsersController {
   @Get(':userId')
   async findUser(@Res() response: Response, @Param('userId') userId: string) {
     const user = await this.usersService.getUser(userId);
-    return response.status(200).json(user || {});
+    const userIsConnected = await this.usersService.userIsConnected(userId);
+    return response
+      .status(200)
+      .json({ ...user, online: userIsConnected } || {});
   }
 
   @Put(':userId')

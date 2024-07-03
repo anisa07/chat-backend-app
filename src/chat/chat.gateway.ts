@@ -87,7 +87,7 @@ export class ChatGateway
   }
 
   @SubscribeMessage('user-typing')
-  handlenTyping(_: any, message: string) {
+  handleTyping(_: any, message: string) {
     const data = JSON.parse(message);
     for (const id of data.participantIds) {
       this.socketConnectionService.sendMessage(

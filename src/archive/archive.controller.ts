@@ -101,7 +101,10 @@ export class ArchiveController {
 
     const participantsMap = new Map();
     for (const user of participantUsers) {
-      participantsMap.set(user.userId, user);
+      participantsMap.set(user.userId, {
+        ...user,
+        online: this.archiveService.userIsConnected(user.userId),
+      });
     }
 
     for (const conversation of conversations) {
@@ -153,7 +156,10 @@ export class ArchiveController {
       await this.archiveService.getAllParticipants(authorIds);
     const authorsMap = new Map();
     for (const author of authorsUsers) {
-      authorsMap.set(author.userId, author);
+      authorsMap.set(author.userId, {
+        ...author,
+        online: this.archiveService.userIsConnected(author.userId),
+      });
     }
 
     const updatedMessages = [];

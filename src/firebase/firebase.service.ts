@@ -31,6 +31,7 @@ export class FirebaseService {
     field: string,
     value: string,
   ): Promise<any> {
+    // TODO: firestore doesn't allow partial search; they suggest using Algolia or ElasticSearch
     const snapshot = await this.db
       .collection(collection)
       .where(field, '==', value)

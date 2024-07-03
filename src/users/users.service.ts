@@ -4,12 +4,14 @@ import { Injectable } from '@nestjs/common';
 import { UsersDTO } from 'src/dto/users.dto';
 // import { Users } from 'src/schema/users.schema';
 import { FirebaseService } from 'src/firebase/firebase.service';
+import { SocketConnectionService } from 'src/socket-connection/socket-connection.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     // @InjectModel(Users.name) private userModel: Model<Users>,
     private readonly firebaseService: FirebaseService,
+    private socketConnectionService: SocketConnectionService,
   ) {}
 
   async createUser(data: UsersDTO) {
@@ -19,10 +21,13 @@ export class UsersService {
   async getUsers(query: Record<string, any>) {
     // TODO create better solution for filtering
     const queryKey = Object.keys(query)[0];
+    if (!query[queryKey]) return [];
+    const capitalQueryValue =
+      query[queryKey].charAt(0).toUpperCase() + query[queryKey].slice(1);
     const users = await this.firebaseService.getSpecificValue(
       'users',
       queryKey,
-      query[queryKey],
+      capitalQueryValue,
     );
     return users || [];
   }
@@ -37,5 +42,9 @@ export class UsersService {
 
   async updateUser(data: UsersDTO) {
     return this.firebaseService.updateValue(`users`, data.userId, data);
+  }
+
+  async userIsConnected(userId: string) {
+    return this.socketConnectionService.userIsConnected(userId);
   }
 }

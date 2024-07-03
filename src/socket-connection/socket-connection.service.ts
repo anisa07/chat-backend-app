@@ -34,40 +34,7 @@ export class SocketConnectionService {
     }
   }
 
-  // // @SubscribeMessage('notification')
-  // handlenNotification(_: any, message: string) {
-  //   // console.log('notification', JSON.parse(message));
-  //   const data = JSON.parse(message);
-  //   for (const id of data.participantIds) {
-  //     const connectedSocket = this.connectedSockets.get(id);
-  //     if (connectedSocket) {
-  //       connectedSocket.emit(
-  //         'user-online-status',
-  //         JSON.stringify({
-  //           userId: data.userId,
-  //           online: data.online,
-  //         }),
-  //       );
-  //     }
-  //   }
-  // }
-
-  // @SubscribeMessage('user-typing')
-  // handlenTyping(_: any, message: string) {
-  //   const data = JSON.parse(message);
-  //   for (const id of data.participantIds) {
-  //     const connectedSocket = this.connectedSockets.get(id);
-  //     if (connectedSocket) {
-  //       connectedSocket.emit(
-  //         'typing',
-  //         JSON.stringify({
-  //           conversationId: data.conversationId,
-  //           user: data.user,
-  //           userId: data.userId,
-  //           typing: data.typing,
-  //         }),
-  //       );
-  //     }
-  //   }
-  // }
+  userIsConnected(userId: string) {
+    return this.connectedSockets.has(userId);
+  }
 }
