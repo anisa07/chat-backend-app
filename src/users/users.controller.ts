@@ -7,11 +7,14 @@ import {
   Put,
   Req,
   Res,
+  UseGuards,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
+import { FirebaseAuthGuard } from 'src/auth/auth.guard.middleware';
 import { UsersDTO } from 'src/dto/users.dto';
 import { UsersService } from 'src/users/users.service';
 
+@UseGuards(FirebaseAuthGuard)
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}

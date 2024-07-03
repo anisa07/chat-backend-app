@@ -1,10 +1,21 @@
-import { Body, Controller, Get, Param, Post, Put, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Put,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { MessageDTO } from 'src/dto/message.dto';
 import { createId } from 'src/helpers/helpers';
 import { ArchiveMessageDTO } from 'src/dto/archive.message.dto';
 import { ArchiveService } from './archive.service';
 import { Response } from 'express';
+import { FirebaseAuthGuard } from 'src/auth/auth.guard.middleware';
 
+@UseGuards(FirebaseAuthGuard)
 @Controller('archive')
 export class ArchiveController {
   constructor(private readonly archiveService: ArchiveService) {}
