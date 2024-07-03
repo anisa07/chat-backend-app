@@ -1,24 +1,28 @@
 import { Module } from '@nestjs/common';
 import * as admin from 'firebase-admin';
 import { FirebaseService } from './firebase.service';
-import { readFileSync } from 'fs';
-import * as path from 'path';
+import { ServiceAccount } from 'firebase-admin';
 
 @Module({
   providers: [
     {
       provide: 'FIREBASE',
       useFactory: () => {
-        const firebaseServiceAccountFile = readFileSync(
-          path.join(__dirname.replace('dist', 'src'), 'config.json'),
-          'utf8',
-        );
-        const serviceAccount = JSON.parse(firebaseServiceAccountFile);
-
         if (!admin.apps.length) {
           return admin.initializeApp({
-            credential: admin.credential.cert(serviceAccount),
-            // databaseURL: process.env.FIREBASE_DB_URL,
+            credential: admin.credential.cert({
+              type: process.env.TYPE,
+              project_id: process.env.PROJECT_ID,
+              private_key_id: process.env.PRIVATE_KEY_ID,
+              private_key: process.env.PRIVATE_KEY,
+              client_email: process.env.CLIENT_EMAIL,
+              client_id: process.env.CLIENT_ID,
+              auth_uri: process.env.AUTH_URI,
+              token_uri: process.env.TOKEN_URI,
+              auth_provider_x509_cert_url: process.env.AUTH_CERT_URL,
+              client_x509_cert_url: process.env.CLIENT_CERT_URL,
+              UNIVERSAL_DOMAIN: process.env.UNIVERSAL_DOMAIN,
+            } as ServiceAccount),
           });
         }
         return admin.app();

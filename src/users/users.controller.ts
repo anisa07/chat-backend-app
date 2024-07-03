@@ -29,7 +29,11 @@ export class UsersController {
   async getUsers(@Res() response: Response, @Req() request: Request) {
     if (request.query) {
       const users = await this.usersService.getUsers(request.query);
-      return response.status(200).json(users);
+      const usersWithStatus = users.map((user) => {
+        const userIsConnected = this.usersService.userIsConnected(user.userId);
+        return { ...user, online: userIsConnected };
+      });
+      return response.status(200).json(usersWithStatus);
     }
 
     return response.status(200).json([]);
@@ -38,7 +42,7 @@ export class UsersController {
   @Get(':userId')
   async findUser(@Res() response: Response, @Param('userId') userId: string) {
     const user = await this.usersService.getUser(userId);
-    const userIsConnected = await this.usersService.userIsConnected(userId);
+    const userIsConnected = this.usersService.userIsConnected(userId);
     return response
       .status(200)
       .json({ ...user, online: userIsConnected } || {});
