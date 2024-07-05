@@ -7,7 +7,7 @@ async function bootstrap() {
   app.enableCors({
     //Add your origins here
     // origin: 'http://localhost:5173',
-    origin: '*',
+    origin: 'https://chat-web-app-smoky.vercel.app',
   });
   // app.use(helmet());
   await app.listen(3000);
