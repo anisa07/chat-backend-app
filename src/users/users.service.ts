@@ -44,7 +44,7 @@ export class UsersService {
     return this.firebaseService.updateValue(`users`, data.userId, data);
   }
 
-  async userIsConnected(userId: string) {
+  userIsConnected(userId: string) {
     return this.socketConnectionService.userIsConnected(userId);
   }
 }

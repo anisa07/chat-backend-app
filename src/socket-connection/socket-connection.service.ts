@@ -35,6 +35,8 @@ export class SocketConnectionService {
   }
 
   userIsConnected(userId: string) {
+    console.log('Checking if user is connected', userId);
+    console.log('Connected sockets', this.connectedSockets.keys());
     return this.connectedSockets.has(userId);
   }
 }

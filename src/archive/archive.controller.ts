@@ -62,9 +62,14 @@ export class ArchiveController {
     const participantUsers =
       await this.archiveService.getAllParticipants(participantIds);
 
+    const participantsWithStatus = participantUsers.map((user) => {
+      const userIsConnected = this.archiveService.userIsConnected(user.userId);
+      return { ...user, online: userIsConnected };
+    });
+
     this.archiveService.sendMessage({
       ...data,
-      participantUsers,
+      participantUsers: participantsWithStatus,
       messageId: archiveMessage.messageId,
       createdAt: archiveMessage.createdAt,
       conversationId: conversation.conversationId,
