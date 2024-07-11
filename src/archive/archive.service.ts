@@ -57,6 +57,7 @@ export class ArchiveService {
   }
 
   async getConversationArchive(conversationId: string) {
+    // return this.firebaseService.getConversationArchive(conversationId);
     return this.firebaseService.getSpecificValue(
       'archiveMessages',
       'conversationId',
@@ -65,15 +66,16 @@ export class ArchiveService {
     // return this.archiveMessageModel.find({ conversationId });
   }
 
-  async getConversationMessages(messageIds: string[]) {
-    return this.firebaseService.getConversationMessages(messageIds);
+  async getConversationMessages(conversationId: string, date: Date) {
+    return this.firebaseService.getConversationMessages(conversationId, date);
+    // return this.firebaseService.getConversationMessages(messageIds);
     // return this.archiveMessageModel.find({
     //   messageId: { $in: messageIds },
     // });
   }
 
-  async getAllConversation(userId: string) {
-    return this.firebaseService.getAllUserConversation(userId);
+  async getAllConversation(userId: string, date: Date) {
+    return this.firebaseService.getAllUserConversation(userId, date);
   }
 
   async getAllParticipants(participantIds: string[]) {

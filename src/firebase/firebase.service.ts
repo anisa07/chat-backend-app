@@ -1,5 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import * as admin from 'firebase-admin';
+// import { Timestamp } from '@firebase/firestore';
+
+const CONVERSATION_LIMIT = 1;
+const MESSAGE_LIMIT = 10;
 
 @Injectable()
 export class FirebaseService {
@@ -92,12 +96,71 @@ export class FirebaseService {
     return snapshot.docs.map((doc) => doc.data());
   }
 
-  async getAllUserConversation(userId: string): Promise<any> {
+  async getAllUserConversation(userId: string, date: Date): Promise<any> {
+    const conversationsSnapshot = await this.db
+      .collection('conversations')
+      .where('participantIds', 'array-contains', userId)
+      .count()
+      .get();
+    const conversationsCount = conversationsSnapshot.data().count;
+
+    if (conversationsCount === 0)
+      return { conversations: [], conversationsCount };
+
+    // console.log('date', date);
+    // const test = await this.db
+    //   .collection('conversations')
+    //   .where('participantIds', 'array-contains', userId)
+    //   .orderBy('createdAt', 'desc')
+    //   .where('createdAt', '<', date)
+    //   //.endBefore(Timestamp.fromDate(date))
+    //   .get();
+
+    // console.log(
+    //   'test',
+    //   test.docs.map((doc) => doc.data()),
+    // );
+
     const snapshot = await this.db
       .collection('conversations')
       .where('participantIds', 'array-contains', userId)
+      .orderBy('createdAt', 'desc')
+      .where('createdAt', '<', date)
+      // .endBefore(date)
+      // .endBefore(date.getTime())
+      .limit(CONVERSATION_LIMIT)
       .get();
-    return snapshot.docs.map((doc) => doc.data());
+
+    return {
+      conversations: snapshot.docs.map((doc) => doc.data()),
+      conversationsCount,
+    };
+  }
+
+  async getConversationMessages(conversationId: string, date: Date) {
+    // this.getSpecificValue('archiveMessages', 'conversationId', conversationId);
+    const messagesSnapshot = await this.db
+      .collection('archiveMessages')
+      .where('conversationId', '==', conversationId)
+      .count()
+      .get();
+
+    const snapshot = await this.db
+      .collection('archiveMessages')
+      .where('conversationId', '==', conversationId)
+      .orderBy('createdAt', 'desc')
+      .where('createdAt', '<', date)
+      .limit(MESSAGE_LIMIT)
+      .get();
+
+    console.log(
+      'messages',
+      snapshot.docs.map((doc) => doc.data()),
+    );
+    return {
+      messages: snapshot.docs.map((doc) => doc.data()),
+      messageLength: messagesSnapshot.data().count,
+    };
   }
 
   async getUserUnreadMessages(
@@ -112,11 +175,11 @@ export class FirebaseService {
     return snapshot.docs.map((doc) => doc.data());
   }
 
-  async getConversationMessages(messageIds: string[]) {
-    const snapshot = await this.db
-      .collection('archiveMessages')
-      .where('messageId', 'in', messageIds)
-      .get();
-    return snapshot.docs.map((doc) => doc.data());
-  }
+  // async getConversationMessages(messageIds: string[]) {
+  //   const snapshot = await this.db
+  //     .collection('archiveMessages')
+  //     .where('messageId', 'in', messageIds)
+  //     .get();
+  //   return snapshot.docs.map((doc) => doc.data());
+  // }
 }

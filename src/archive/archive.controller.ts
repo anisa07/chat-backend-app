@@ -82,12 +82,14 @@ export class ArchiveController {
     });
   }
 
-  @Get(':userId')
+  @Get(':userId/:date')
   async getAllUserConversations(
     @Res() response: Response,
     @Param('userId') userId: string,
+    @Param('date') date: string,
   ) {
-    const conversations = await this.archiveService.getAllConversation(userId);
+    const { conversations, conversationsCount } =
+      await this.archiveService.getAllConversation(userId, new Date(date));
     const updatedConversations = [];
 
     if (!conversations || conversations.length === 0) {
@@ -140,14 +142,18 @@ export class ArchiveController {
       });
     }
 
-    return response.status(200).send(updatedConversations);
+    return response.status(200).send({
+      conversations: updatedConversations,
+      conversationsCount,
+    });
   }
 
-  @Get('coversation/:userId/:conversationId')
+  @Get('coversation/:userId/:conversationId/:date')
   async getUserConversation(
     @Res() response: Response,
     @Param('userId') userId: string,
     @Param('conversationId') conversationId: string,
+    @Param('date') date: string,
   ) {
     const conversation =
       await this.archiveService.getConversation(conversationId);
@@ -156,8 +162,11 @@ export class ArchiveController {
       return response.status(200).send([]);
     }
 
-    const conversationMessages =
-      await this.archiveService.getConversationArchive(conversationId);
+    const { messages: conversationMessages, messageLength } =
+      await this.archiveService.getConversationMessages(
+        conversationId,
+        new Date(date),
+      );
 
     if (!conversationMessages) {
       return response.status(200).send([]);
@@ -190,7 +199,10 @@ export class ArchiveController {
       });
     }
 
-    return response.status(201).send(updatedMessages);
+    return response.status(201).send({
+      messages: updatedMessages,
+      messagesCount: messageLength,
+    });
   }
 
   @Put('coversation/:conversationId/messages')
