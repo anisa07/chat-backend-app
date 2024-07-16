@@ -205,6 +205,41 @@ export class ArchiveController {
     });
   }
 
+  // check if conversation exists between two users
+  @Get('new-coversation/:userId/:newUserId')
+  async checkExistingConversation(
+    @Res() response: Response,
+    @Param('userId') userId: string,
+    @Param('newUserId') newUserId: string,
+  ) {
+    const conversations = await this.archiveService.findParticipantConversation(
+      userId,
+      newUserId,
+    );
+
+    if (!conversations) {
+      return response.status(201).send(null);
+    }
+
+    const conversation = conversations.find(
+      (c) =>
+        c.participantIds.length === 2 && c.participantIds.includes(newUserId),
+    );
+
+    if (!conversation) {
+      return response.status(201).send(null);
+    }
+
+    const authorsUsers = await this.archiveService.getAllParticipants([
+      userId,
+      newUserId,
+    ]);
+
+    conversation.participants = authorsUsers;
+
+    return response.status(200).send(conversation);
+  }
+
   @Put('coversation/:conversationId/messages')
   async updateConversationMessages(
     @Body()

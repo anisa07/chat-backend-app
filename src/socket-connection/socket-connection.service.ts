@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { SubscribeMessage } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 
 @Injectable()
@@ -7,16 +6,12 @@ export class SocketConnectionService {
   constructor() {}
 
   private readonly connectedSockets: Map<string, Socket> = new Map();
-  // private socket: Socket;
-  // private server: Server;
 
   handleConnection(socket: Socket, server: Server): void {
     const userId: string =
       typeof socket.handshake.query.userId === 'string'
         ? socket.handshake.query.userId
         : socket.handshake.query.userId.join();
-    // this.socket = socket;
-    // this.server = server;
     this.connectedSockets.set(userId, socket);
 
     socket.on('disconnect', () => {

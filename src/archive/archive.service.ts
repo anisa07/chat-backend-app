@@ -1,12 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types, Document } from 'mongoose';
 import { MessageDTO } from '../dto/message.dto';
-// import { APIFeatures } from 'src/helpers/APIFeatures';
-// import { WebSocketServer } from '@nestjs/websockets';
-// import { Server } from 'socket.io';
 import { SocketConnectionService } from 'src/socket-connection/socket-connection.service';
-// import { Conversation } from 'src/schema/conversation.schema';
 import { ConversationDTO } from 'src/dto/conversation.dto';
 import { ArchiveMessageDTO } from 'src/dto/archive.message.dto';
 import { ArchiveMessage } from 'src/schema/archive.message.schema';
@@ -16,11 +10,6 @@ import { FirebaseService } from 'src/firebase/firebase.service';
 @Injectable()
 export class ArchiveService {
   constructor(
-    // @InjectModel(Conversation.name)
-    // // private conversationModel: Model<Conversation>,
-    // @InjectModel(ArchiveMessage.name)
-    // private archiveMessageModel: Model<ArchiveMessage>,
-
     private socketConnectionService: SocketConnectionService,
     private readonly usersService: UsersService,
     private readonly firebaseService: FirebaseService,
@@ -74,6 +63,13 @@ export class ArchiveService {
     // });
   }
 
+  async findParticipantConversation(
+    userId: string,
+    newUserId: string,
+  ): Promise<any> {
+    return this.firebaseService.findParticipantConversation(userId, newUserId);
+  }
+
   async getAllConversation(userId: string, date: Date) {
     return this.firebaseService.getAllUserConversation(userId, date);
   }
@@ -86,11 +82,6 @@ export class ArchiveService {
     userId: string,
     conversationIds: string[],
   ) {
-    // return this.archiveMessageModel
-    //   .find({
-    //     conversationId: { $in: conversationIds },
-    //   })
-    //   .where({ unreadBy: userId });
     return this.firebaseService.getUserUnreadMessages(userId, conversationIds);
   }
 
@@ -111,9 +102,6 @@ export class ArchiveService {
       messageIds,
       messages,
     );
-    // messages.forEach(async (message) => {
-    //   await message.save();
-    // });
   }
 
   async createConversation(conversation: ConversationDTO) {
