@@ -18,10 +18,18 @@ jobs:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
         run: |
-          echo "${SSH_PRIVATE_KEY}" > private_key
-          chmod 600 private_key
+          # Ensure .ssh directory exists
+          mkdir -p ~/.ssh
+
+          # Save SSH private key
+          echo "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+
+          # Start the SSH agent and add the private key
           eval $(ssh-agent -s)
-          ssh-add private_key
+          ssh-add ~/.ssh/id_rsa
+
+          # Add remote host to known_hosts
           ssh-keyscan -H $REMOTE_HOST >> ~/.ssh/known_hosts
 
       - name: Grant execute permission to deploy.sh
