@@ -46,21 +46,15 @@ export class ArchiveService {
   }
 
   async getConversationArchive(conversationId: string) {
-    // return this.firebaseService.getConversationArchive(conversationId);
     return this.firebaseService.getSpecificValue(
       'archiveMessages',
       'conversationId',
       conversationId,
     );
-    // return this.archiveMessageModel.find({ conversationId });
   }
 
   async getConversationMessages(conversationId: string, date: Date) {
     return this.firebaseService.getConversationMessages(conversationId, date);
-    // return this.firebaseService.getConversationMessages(messageIds);
-    // return this.archiveMessageModel.find({
-    //   messageId: { $in: messageIds },
-    // });
   }
 
   async findParticipantConversation(

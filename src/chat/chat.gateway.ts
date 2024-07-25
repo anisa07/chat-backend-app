@@ -1,28 +1,15 @@
-// import { SubscribeMessage, WebSocketGateway } from '@nestjs/websockets';
-
-// @WebSocketGateway()
-// export class ChatGateway {
-//   @SubscribeMessage('message')
-//   handleMessage(client: any, payload: any): string {
-//     return 'Hello world!';
-//   }
-// }
-
 import { Logger } from '@nestjs/common';
 import {
   OnGatewayConnection,
   OnGatewayDisconnect,
   OnGatewayInit,
   SubscribeMessage,
-  // SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
 
 import { Server, Socket } from 'socket.io';
-// import { DefaultEventsMap } from 'socket.io/dist/typed-events';
-// import { ArchiveService } from 'src/archive/archive.service';
-// import { UsersService } from 'src/users/users.service';
+
 import { SocketConnectionService } from 'src/socket-connection/socket-connection.service';
 
 @WebSocketGateway(
@@ -50,7 +37,6 @@ export class ChatGateway
   }
 
   handleConnection(socket: Socket) {
-    // /console.log(client.handshake.query.userId);
     const { sockets } = this.server.sockets;
 
     // Enable CORS for WebSocket
@@ -63,7 +49,6 @@ export class ChatGateway
     this.logger.debug(`Number of connected clients: ${sockets.size}`);
 
     this.socketConnectionService.handleConnection(socket, this.server);
-    // this.server.to(client.id).emit('message', 'test connection');
   }
 
   handleDisconnect(client: any) {
@@ -72,7 +57,6 @@ export class ChatGateway
 
   @SubscribeMessage('notification')
   handleMessage(_: any, message: any) {
-    // console.log('notification', JSON.parse(message));
     const data = JSON.parse(message);
     for (const id of data.participantIds) {
       this.socketConnectionService.sendMessage(

@@ -17,8 +17,6 @@ export class SocketConnectionService {
     socket.on('disconnect', () => {
       this.connectedSockets.delete(userId);
     });
-
-    // Handle other events and messages from the client
   }
 
   sendMessage(userId: string, message: string, messayType: string) {

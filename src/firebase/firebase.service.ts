@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import * as admin from 'firebase-admin';
 
-const CONVERSATION_LIMIT = 1;
+const CONVERSATION_LIMIT = 25;
 const MESSAGE_LIMIT = 10;
 
 @Injectable()

@@ -93,7 +93,10 @@ export class ArchiveController {
     const updatedConversations = [];
 
     if (!conversations || conversations.length === 0) {
-      return response.status(201).send([]);
+      return response.status(201).send({
+        conversations: [],
+        conversationsCount,
+      });
     }
 
     const userIds = [];
@@ -108,7 +111,10 @@ export class ArchiveController {
     }
 
     if (!participantUsers) {
-      return response.status(201).send([]);
+      return response.status(201).send({
+        conversations: [],
+        conversationsCount,
+      });
     }
 
     const unreadConversations =
@@ -159,7 +165,10 @@ export class ArchiveController {
       await this.archiveService.getConversation(conversationId);
 
     if (conversation && !conversation.participantIds.includes(userId)) {
-      return response.status(200).send([]);
+      return response.status(200).send({
+        messges: [],
+        messagesCount: 0,
+      });
     }
 
     const { messages: conversationMessages, messageLength } =
@@ -169,7 +178,10 @@ export class ArchiveController {
       );
 
     if (!conversationMessages) {
-      return response.status(200).send([]);
+      return response.status(200).send({
+        messges: [],
+        messagesCount: 0,
+      });
     }
 
     const authorIds = [];
