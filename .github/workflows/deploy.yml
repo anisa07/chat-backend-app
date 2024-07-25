@@ -22,6 +22,9 @@ jobs:
           eval $(ssh-agent -s)
           ssh-add private_key
 
+      - name: Grant execute permission to deploy.sh
+        run: chmod +x ./deploy.sh
+
       - name: Run deployment script
         env:
           REMOTE_USER: ${{ secrets.REMOTE_USER }}
