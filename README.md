@@ -35,3 +35,5 @@ PUT update conversation messages
 ```
 
 Web part could be seen here [https://chat-web-app-smoky.vercel.app](https://chat-web-app-smoky.vercel.app)
+
+Backend part is deployed on Digital ocean droplet and updated each time main branch is updated using github actions
